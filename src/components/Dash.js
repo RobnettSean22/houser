@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import axios from 'axios'
 import Create from './Create'
+import {Switch, Route, Link} from 'react-router-dom'
 
 
 class Dash extends Component {
@@ -8,7 +9,14 @@ class Dash extends Component {
         super(props)
 
         this.state = {
-                 allHomes:[]
+                 allHomes:[],
+                 updateListing:'',
+                 address:'',
+                 city: '',
+                 state:'',
+                 zip:'',
+                 image: '',
+                      
         }
         this.createListing  = this.createListing.bind(this)
     }
@@ -19,7 +27,8 @@ class Dash extends Component {
     readListings(){
         axios.get(`/api/view_listings`).then(response => {
             this.setState({
-                allHomes:response.data
+                allHomes:response.data,
+                updateListing:null
             })
         })
     }
@@ -49,26 +58,49 @@ class Dash extends Component {
         })
 
     }
+    editListing(id, address, city, state, zip, image){
+        const updateListing = {
+            address,
+            city,
+            state,
+            zip,
+            image,
+
+        };
+        axios.put(`/api/edit_listing/${id}`, updateListing).then(response => {
+            this.setState({
+                allHomes:response.data
+            })
+        })
+    }
 
     render() {
         const {allHomes} = this.state
         const mapHomes = allHomes.map(home => {
             return (
-                <div key = {home.property_id}>
-                    <div>{home.address}</div>
-                    <div>{home.city}</div>
-                    <div>{home.state}</div>
-                    <div>{home.zip}</div>
-                    <div>{home.image}</div>
-                    <Create  newListing = {this.createListing}/>
-                    <button onClick={() => this.deleteListing(home.property_id)}>delete</button>
-                
-                </div>
+                    
+                    <div key = {home.property_id}>
+                        
+                        <input placeholder = {home.address} onChange = {(e) => this.setState({address:e.target.value})}/>
+                        <input placeholder = {home.city} onChange = {(e) => this.setState({city:e.target.value})}/>
+                        <input placeholder = {home.state} onChange = {(e) => this.setState({state:e.target.value})}/>
+                        <input placeholder = {home.zip} onChange = {(e) => this.setState({zip:e.target.value})}/>
+                        <input placeholder = {home.image} onChange = {(e) => this.setState({image:e.target.value})}/>
+                        
+                        
+                        
+                        
+                        <button onClick ={(e) => this.editListing(home.property_id) }>Update</button>
+                        // <button onClick={() => this.deleteListing(home.property_id)}>delete</button>
+                    
+                    </div>
             )
         })
         return (
             <div>
-                {mapHomes}
+                <Create  newListing = {this.createListing}/>
+                <div>{mapHomes}</div>
+               
             </div>
         )
     }
